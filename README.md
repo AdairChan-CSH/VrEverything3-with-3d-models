@@ -1,6 +1,6 @@
 Welcome to the VrEverything3-with-3d-models wiki!, pls look for faster update.
 
-This time is real, Virtual Reality Auto depth VR with 3d model All auto AI VR graphic prediction precedion Heal their usage of old VR headset with direct display VR mod for all games. Virtual Reality Auto depth VR prediction, precedion, AI, convertor, SBS vr, SBS convertor
+This time is real, Virtual Reality Auto depth VR with 3d model. All auto AI VR graphic prediction precedion Heal their usage of old VR headset with direct display VR mod for all games. Virtual Reality Auto depth VR prediction, precedion, AI, convertor, SBS vr, SBS convertor
 
 VR everything on your desktop without SteamVR, in addition uses of WebRTC, recordRTC This program app can do auto (VR depth) immersive for all computer screen videos, games, (needed direct display headset), low requirements, low overhead
 
