@@ -10,7 +10,7 @@ put this project files in their simple demo folder (no need of hosting)
 
 open "vr99.html"
 
-click buttons, select screens, notifications
+click buttons, select screens, notifications(capture and screenshot)
 
 put the browsers in between two monitors
 
