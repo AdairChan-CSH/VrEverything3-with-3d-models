@@ -15,14 +15,15 @@
             width: 68%;
         }
 
-    .grid {top-padding: 3px;
-        text-align: center;
-        display: grid;
-width:100%;
-        grid-gap: -5px;
-        grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr);}
-        .grid2 {
-}
+        .grid {
+            padding-top: 3px;
+            text-align: center;
+            display: grid;
+            width: 100%;
+            grid-gap: -5px;
+            grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -30,7 +31,7 @@ width:100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-         .container {
+        .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
@@ -126,7 +127,7 @@ width:100%;
             transform: translateY(0);
         }
 
-        #screenshotList, #unfilteredScreenshotList {
+        #screenshotList {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 15px;
@@ -224,44 +225,43 @@ width:100%;
     <button id="btn-stop-recording" disabled>Stop Recording</button>
     <hr>
     
-        <div><h2><font color="white">Original Camera</font></h2><h2><font color="white">Original Camera</font></h2>
-            <h2><font color="white">Original Camera</font></h2>
-            <h2><font color="white">Original Camera</font></h2><h2><font color="white">Original Camera</font></h2>
-                <div class="main-content">
-                    <div class="grid">
-                        <div class="viewer-container" id="viewerContainer1">
-                            <canvas id="threeCanvas"></canvas>
-                            <div class="viewer-controls">
-                                <button id="resetView1">reset3d</button>
-                            </div>
-                        </div>
-                        <div class="viewer-container" id="viewerContainer2">
-                            <canvas id="threeCanvas2"></canvas>
-                            <div class="viewer-controls">
-                                <button id="resetView2">reset3d</button>
-                            </div>
-                        </div>
-                    </div><hr>
-                    <div class="video-container">
-                        <video id="video-preview" controls autoplay playsinline></video>
-                        <div class="controls2">
-                            <button id="toggleScreenshot">start screenshot</button>
-                            <button id="captureNow">instant screenshot</button>
-                            <button id="clearScreenshots">clear</button>
-                        </div>
-                        <div class="status">
-                            <p>status: <span id="statusText">stpped</span></p>
-                            <p>count <span id="counter">0</span></p>
-                        </div>
-                    </div>
-                    <div class="screenshots-container">
-                        <h2>screenshot show (Filtered) (<span id="screenshotCount">0</span>)</h2>
-                        <div id="screenshotList"></div>
-                        <h2>screenshot show (Unfiltered) (<span id="unfilteredScreenshotCount">0</span>)</h2>
-                        <div id="unfilteredScreenshotList"></div>
+    <div>
+        <h2><font color="white">Original Camera</font></h2>
+        <h2><font color="white">Original Camera</font></h2>
+        <h2><font color="white">Original Camera</font></h2>
+        <h2><font color="white">Original Camera</font></h2>
+        <h2><font color="white">Original Camera</font></h2>
+        <div class="main-content">
+            <div class="grid">
+                <div class="viewer-container" id="viewerContainer1">
+                    <canvas id="threeCanvas"></canvas>
+                    <div class="viewer-controls">
+                        <button id="resetView1">reset3d</button>
                     </div>
                 </div>
-            
+                <div class="viewer-container" id="viewerContainer2">
+                    <canvas id="threeCanvas2"></canvas>
+                    <div class="viewer-controls">
+                        <button id="resetView2">reset3d</button>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="video-container">
+                <video id="video-preview" controls autoplay playsinline></video>
+                <div class="controls2">
+                    <button id="captureNow">instant screenshot</button>
+                    <button id="clearScreenshots">clear</button>
+                </div>
+                <div class="status">
+                    <p>status: <span id="statusText">stopped</span></p>
+                    <p>count <span id="screenshotCount">0</span></p>
+                </div>
+            </div>
+            <div class="screenshots-container">
+                <h2>screenshot show (Filtered) (<span id="screenshotCount">0</span>)</h2>
+                <div id="screenshotList"></div>
+            </div>
         </div>
     </div>
     <script src="/RecordRTC.js"></script>
@@ -272,22 +272,16 @@ width:100%;
         document.addEventListener('DOMContentLoaded', function() {
             // 获取DOM元素
             const video = document.getElementById('video-preview');
-            const toggleBtn = document.getElementById('toggleScreenshot');
             const captureNowBtn = document.getElementById('captureNow');
             const clearBtn = document.getElementById('clearScreenshots');
             const screenshotList = document.getElementById('screenshotList');
-            const unfilteredScreenshotList = document.getElementById('unfilteredScreenshotList');
             const statusText = document.getElementById('statusText');
-            const counter = document.getElementById('counter');
             const screenshotCount = document.getElementById('screenshotCount');
-            const unfilteredScreenshotCount = document.getElementById('unfilteredScreenshotCount');
             const resetViewBtn1 = document.getElementById('resetView1');
             const resetViewBtn2 = document.getElementById('resetView2');
 
-            let screenshotInterval = null;
+            let screenshotInterval = 0.004;
             let screenshotCounter = 0;
-            let unfilteredScreenshotCounter = 0;
-
             let isCapturing = false;
 
             // Three.js相关变量 (Viewer 1)
@@ -300,7 +294,6 @@ width:100%;
             // 初始化Three.js场景 (Viewer 1)
             function initThreeJS1() {
                 scene1 = new THREE.Scene();
-
                 camera1 = new THREE.PerspectiveCamera(
                     75,
                     document.getElementById('viewerContainer1').offsetWidth /
@@ -363,7 +356,6 @@ width:100%;
             // 初始化Three.js场景 (Viewer 2)
             function initThreeJS2() {
                 scene2 = new THREE.Scene();
-
                 camera2 = new THREE.PerspectiveCamera(
                     75,
                     document.getElementById('viewerContainer2').offsetWidth /
@@ -449,116 +441,101 @@ width:100%;
                 renderer2.render(scene2, camera2);
             }
 
-            // 生成位移贴图// Generate displacement map with flat tops
-function generateDisplacementMap(imageData) {
-    const canvas = document.createElement('canvas');
-    canvas.width = imageData.width;
-    canvas.height = imageData.height;
-    const ctx = canvas.getContext('2d');
-    ctx.putImageData(imageData, 0, 0);
+            // 生成位移贴图
+            function generateDisplacementMap(imageData) {
+                const canvas = document.createElement('canvas');
+                canvas.width = imageData.width;
+                canvas.height = imageData.height;
+                const ctx = canvas.getContext('2d');
+                ctx.putImageData(imageData, 0, 0);
 
-    const dispCanvas = document.createElement('canvas');
-    dispCanvas.width = imageData.width;
-    dispCanvas.height = imageData.height;
-    const dispCtx = dispCanvas.getContext('2d');
-    dispCtx.drawImage(canvas, 0, 0);
+                const dispCanvas = document.createElement('canvas');
+                dispCanvas.width = imageData.width;
+                dispCanvas.height = imageData.height;
+                const dispCtx = dispCanvas.getContext('2d');
+                dispCtx.drawImage(canvas, 0, 0);
 
-    const imgData = dispCtx.getImageData(0, 0, dispCanvas.width, dispCanvas.height);
-    const data = imgData.data;
+                const imgData = dispCtx.getImageData(0, 0, dispCanvas.width, dispCanvas.height);
+                const data = imgData.data;
 
-    const maxHeight = 64.1; // Threshold for flat tops (0-255 range; adjust to 150 for sharper flat tops, 200 for softer)
-    for (let i = 0; i < data.length; i += 4) {
-        // Calculate brightness using luminance formula
-        const brightness = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114) / 255;
-        // Cap brightness to create flat tops
-        const value = Math.min(Math.round(brightness * 255), maxHeight);
-        data[i] = value;
-        data[i + 1] = value;
-        data[i + 2] = value;
-        data[i + 3] = 255;
-    }
+                const maxHeight = 64.1; // Threshold for flat tops
+                for (let i = 0; i < data.length; i += 4) {
+                    const brightness = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114) / 255;
+                    const value = Math.min(Math.round(brightness * 255), maxHeight);
+                    data[i] = value;
+                    data[i + 1] = value;
+                    data[i + 2] = value;
+                    data[i + 3] = 255;
+                }
 
-    dispCtx.putImageData(imgData, 0, 0);
-    return dispCanvas;
-}
+                dispCtx.putImageData(imgData, 0, 0);
+                return dispCanvas;
+            }
 
-            // 更新3D视图 (Viewer 1 and Viewer 2)
-            // Update 3D view (Viewer 1 and Viewer 2)
-function update3DView(imageData) {
-    const canvas = document.createElement('canvas');
-    canvas.width = imageData.width;
-    canvas.height = imageData.height;
-    const ctx = canvas.getContext('2d');
-    ctx.putImageData(imageData, 0, 0);
+            // 更新3D视图
+            function update3DView(imageData) {
+                const canvas = document.createElement('canvas');
+                canvas.width = imageData.width;
+                canvas.height = imageData.height;
+                const ctx = canvas.getContext('2d');
+                ctx.putImageData(imageData, 0, 0);
 
-    // Calculate screenshot aspect ratio
-    currentAspectRatio = imageData.width / imageData.height;
+                currentAspectRatio = imageData.width / imageData.height;
 
-    // Get screen dimensions
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
 
-    // Configurable flat top size (percentage of screen width and height)
-    const flatTopScale = 0.1; // 5% of screen; adjust to 0.03 (3%) for smaller, 0.10 (10%) for larger
+                const flatTopScale = 0.1;
+                const targetFlatTopWidth = screenWidth * flatTopScale;
+                const targetFlatTopHeight = screenHeight * flatTopScale;
 
-    // Target flat top size
-    const targetFlatTopWidth = screenWidth * flatTopScale;
-    const targetFlatTopHeight = screenHeight * flatTopScale;
+                const viewerWidth = document.getElementById('viewerContainer1').offsetWidth;
+                const viewerHeight = document.getElementById('viewerContainer1').offsetHeight;
+                const baseWidth = 8 * (targetFlatTopWidth / viewerWidth) * currentAspectRatio;
+                const baseHeight = 10 * (targetFlatTopHeight / viewerHeight);
 
-    // Calculate base geometry size to map to screen dimensions
-    const viewerWidth = document.getElementById('viewerContainer1').offsetWidth;
-    const viewerHeight = document.getElementById('viewerContainer1').offsetHeight;
-    const baseWidth = 8 * (targetFlatTopWidth / viewerWidth) * currentAspectRatio; // Scale geometry
-    const baseHeight = 10 * (targetFlatTopHeight / viewerHeight);
+                const geometry1 = new THREE.PlaneGeometry(baseWidth, baseHeight, imageData.width, imageData.height);
+                mesh1.geometry.dispose();
+                mesh1.geometry = geometry1;
 
-    // Update geometry to match screenshot aspect ratio and screen proportion (Viewer 1)
-    const geometry1 = new THREE.PlaneGeometry(baseWidth, baseHeight, imageData.width, imageData.height);
-    mesh1.geometry.dispose();
-    mesh1.geometry = geometry1;
+                const geometry2 = new THREE.PlaneGeometry(baseWidth, baseHeight, imageData.width, imageData.height);
+                mesh2.geometry.dispose();
+                mesh2.geometry = geometry2;
 
-    // Update geometry to match screenshot aspect ratio and screen proportion (Viewer 2)
-    const geometry2 = new THREE.PlaneGeometry(baseWidth, baseHeight, imageData.width, imageData.height);
-    mesh2.geometry.dispose();
-    mesh2.geometry = geometry2;
+                const maxDim = Math.max(baseWidth, baseHeight);
+                camera1.position.set(0.083, 0, maxDim * 0.49);
+                camera1.lookAt(0, 0, 0);
+                camera2.position.set(-0.083, 0, maxDim * 0.49);
+                camera2.lookAt(0, 0, 0);
 
-    // Update camera position to ensure entire geometry is visible
-    const maxDim = Math.max(baseWidth, baseHeight);
-    camera1.position.set(0.083, 0, maxDim * 0.49); // Adjusted for thicker hills and visibility
-    camera1.lookAt(0, 0, 0);
-    camera2.position.set(-0.083, 0, maxDim * 0.49); // Adjusted for thicker hills and visibility
-    camera2.lookAt(0, 0, 0);
+                if (texture1) texture1.dispose();
+                texture1 = new THREE.CanvasTexture(canvas);
+                if (texture2) texture2.dispose();
+                texture2 = new THREE.CanvasTexture(canvas);
 
-    // Update texture and displacement map
-    if (texture1) texture1.dispose();
-    texture1 = new THREE.CanvasTexture(canvas);
-    if (texture2) texture2.dispose();
-    texture2 = new THREE.CanvasTexture(canvas);
+                const dispCanvas = generateDisplacementMap(imageData);
+                if (displacementMap1) displacementMap1.dispose();
+                displacementMap1 = new THREE.CanvasTexture(dispCanvas);
+                if (displacementMap2) displacementMap2.dispose();
+                displacementMap2 = new THREE.CanvasTexture(dispCanvas);
 
-    const dispCanvas = generateDisplacementMap(imageData);
-    if (displacementMap1) displacementMap1.dispose();
-    displacementMap1 = new THREE.CanvasTexture(dispCanvas);
-    if (displacementMap2) displacementMap2.dispose();
-    displacementMap2 = new THREE.CanvasTexture(dispCanvas);
+                mesh1.material.map = texture1;
+                mesh1.material.displacementMap = displacementMap1;
+                mesh1.material.displacementScale = 0.93;
+                mesh1.material.needsUpdate = true;
 
-    mesh1.material.map = texture1;
-    mesh1.material.displacementMap = displacementMap1;
-    mesh1.material.displacementScale = 0.93; // Ensure thicker hills
-    mesh1.material.needsUpdate = true;
-
-    mesh2.material.map = texture2;
-    mesh2.material.displacementMap = displacementMap2;
-    mesh2.material.displacementScale = 0.93; // Ensure thicker hills
-    mesh2.material.needsUpdate = true;
-}
+                mesh2.material.map = texture2;
+                mesh2.material.displacementMap = displacementMap2;
+                mesh2.material.displacementScale = 0.93;
+                mesh2.material.needsUpdate = true;
+            }
 
             // 创建画布用于截图
             const filteredCanvas = document.createElement('canvas');
             const filteredCtx = filteredCanvas.getContext('2d');
-            const unfilteredCanvas = document.createElement('canvas');
-            const unfilteredCtx = unfilteredCanvas.getContext('2d');
 
             // 截图功能
-             function captureScreenshot() {
+            function captureScreenshot() {
                 if (video.paused || video.ended) return;
 
                 const computedStyle = getComputedStyle(video);
@@ -571,12 +548,6 @@ function update3DView(imageData) {
                 filteredCtx.drawImage(video, 0, 0, filteredCanvas.width, filteredCanvas.height);
                 const filteredImageData = filteredCtx.getImageData(0, 0, filteredCanvas.width, filteredCanvas.height);
                 filteredCtx.filter = 'none';
-
-                // Unfiltered capture
-                unfilteredCanvas.width = video.videoWidth;
-                unfilteredCanvas.height = video.videoHeight;
-                unfilteredCtx.drawImage(video, 0, 0, unfilteredCanvas.width, unfilteredCanvas.height);
-                const unfilteredImageData = unfilteredCtx.getImageData(0, 0, unfilteredCanvas.width, unfilteredCanvas.height);
 
                 const now = new Date();
                 const timeString = now.toLocaleTimeString();
@@ -593,10 +564,6 @@ function update3DView(imageData) {
                 screenshotCounter = 0;
                 screenshotCount.textContent = '0';
 
-                filteredImg.dataset.imageData = JSON.stringify(Array.from(filteredImageData.data));
-                filteredImg.dataset.width = filteredImageData.width;
-                filteredImg.dataset.height = filteredImageData.height;
-
                 const filteredTimeSpan = document.createElement('div');
                 filteredTimeSpan.className = 'screenshot-time';
                 filteredTimeSpan.textContent = timeString;
@@ -609,90 +576,44 @@ function update3DView(imageData) {
                 screenshotCount.textContent = screenshotCounter;
                 screenshotList.scrollTop = screenshotList.scrollHeight;
 
-                // Unfiltered screenshot
-                const unfilteredScreenshotItem = document.createElement('div');
-                unfilteredScreenshotItem.className = 'screenshot-item';
-
-                const unfilteredImg = document.createElement('img');
-                unfilteredImg.src = unfilteredCanvas.toDataURL('image/png');
-                unfilteredImg.alt = 'Unfiltered  ' + (unfilteredScreenshotCounter + 1);
-
-                unfilteredScreenshotList.innerHTML = '';
-                unfilteredScreenshotCounter = 0;
-                unfilteredScreenshotCount.textContent = '0';
-
-                unfilteredImg.dataset.imageData = JSON.stringify(Array.from(unfilteredImageData.data));
-                unfilteredImg.dataset.width = unfilteredImageData.width;
-                unfilteredImg.dataset.height = unfilteredImageData.height;
-
-                const unfilteredTimeSpan = document.createElement('div');
-                unfilteredTimeSpan.className = 'screenshot-time';
-                unfilteredTimeSpan.textContent = timeString;
-
-                unfilteredScreenshotItem.appendChild(unfilteredImg);
-                unfilteredScreenshotItem.appendChild(unfilteredTimeSpan);
-                unfilteredScreenshotList.appendChild(unfilteredScreenshotItem);
-
-                unfilteredScreenshotCounter++;
-                unfilteredScreenshotCount.textContent = unfilteredScreenshotCounter;
-                unfilteredScreenshotList.scrollTop = unfilteredScreenshotList.scrollHeight;
-
-                // Only unfiltered screenshot updates 3D views when clicked
-                filteredImg.addEventListener('click', function() {
-                    const dataArray = JSON.parse(this.dataset.imageData);
-                    const width = parseInt(this.dataset.width);
-                    const height = parseInt(this.dataset.height);
-                    const restoredImageData = new ImageData(new Uint8ClampedArray(dataArray), width, height);
-                    update3DView(restoredImageData);
-                });
-
-
-                // Update both 3D views with unfiltered screenshot by default
+                // Update both 3D views with filtered screenshot
                 update3DView(filteredImageData);
             }
 
-            toggleBtn.addEventListener('click', function() {
-                if (isCapturing) {
-                    clearInterval(screenshotInterval);
-                    statusText.textContent = 'stopped';
-                    toggleBtn.textContent = 'start screen';
-                    isCapturing = false;
-                } else {
-                    if (video.paused) video.play();
-                    screenshotInterval = setInterval(captureScreenshot, 0.08);
+            // Start screenshot capture at 80 FPS when video plays
+            video.addEventListener('play', function() {
+                if (!isCapturing) {
+                    screenshotInterval = setInterval(captureScreenshot, 1); // 1000ms / 80 ≈ 12.5ms, rounded to 12ms
                     statusText.textContent = 'running';
-                    toggleBtn.textContent = 'stop screen';
-                    isCapturing = true;
-                    if (video.paused) video.play();
-                    screenshotInterval = setInterval(captureScreenshot, 0.08);
-                    statusText.textContent = 'running';
-                    toggleBtn.textContent = 'stop screen';
-                    isCapturing = true;
-                    if (video.paused) video.play();
-                    screenshotInterval = setInterval(captureScreenshot, 0.08);
-                    statusText.textContent = 'running';
-                    toggleBtn.textContent = 'stop screen';
-                    isCapturing = true;
-                    if (video.paused) video.play();
-                    screenshotInterval = setInterval(captureScreenshot, 0.08);
-                    statusText.textContent = 'running';
-                    toggleBtn.textContent = 'stop screen';
                     isCapturing = true;
                 }
             });
 
+            // Stop screenshot capture when video pauses or ends
+            video.addEventListener('pause', function() {
+                if (isCapturing) {
+                    clearInterval(screenshotInterval);
+                    statusText.textContent = 'stopped';
+                    isCapturing = false;
+                }
+            });
+
+            video.addEventListener('ended', function() {
+                if (isCapturing) {
+                    clearInterval(screenshotInterval);
+                    statusText.textContent = 'stopped (stream end)';
+                    isCapturing = false;
+                }
+            });
+
             captureNowBtn.addEventListener('click', function() {
-                captureScreenshot(); captureScreenshot(); captureScreenshot();
+                captureScreenshot();
             });
 
             clearBtn.addEventListener('click', function() {
                 screenshotList.innerHTML = '';
                 screenshotCounter = 0;
                 screenshotCount.textContent = '0';
-
-                unfilteredScreenshotList.innerHTML = '';
-                unfilteredScreenshotCounter = 0;
-                unfilteredScreenshotCount.textContent = '0';
 
                 const placeholderCanvas = document.createElement('canvas');
                 placeholderCanvas.width = 256;
@@ -758,15 +679,6 @@ function update3DView(imageData) {
                 const maxDim = Math.max(8, 8 / currentAspectRatio);
                 camera2.position.set(0, 0, maxDim * 0.8);
                 camera2.lookAt(0, 0, 0);
-            });
-
-            video.addEventListener('ended', function() {
-                if (isCapturing) {
-                    clearInterval(screenshotInterval);
-                    statusText.textContent = 'stopped（stream end）';
-                    toggleBtn.textContent = 'start';
-                    isCapturing = false;
-                }
             });
 
             window.addEventListener('resize', onWindowResize);
@@ -872,7 +784,6 @@ function update3DView(imageData) {
                 audioPlusCanvasStream.addTrack(audioTrack);
             });
 
-            
             var recorder = RecordRTC(audioPlusCanvasStream, { type: 'video' });
             recorder.setRecordingDuration(5 * 1000).onRecordingStopped(function() {
                 var blob = recorder.getBlob();
@@ -882,7 +793,6 @@ function update3DView(imageData) {
                 videoPreview.muted = false;
                 videoPreview.src = URL.createObjectURL(blob);
             });
-
 
             recorder.startRecording();
 
