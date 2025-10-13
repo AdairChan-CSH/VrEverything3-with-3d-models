@@ -236,11 +236,13 @@
                 <div class="viewer-container" id="viewerContainer1">
                     <canvas id="threeCanvas"></canvas>
                     <div class="viewer-controls">
+                        <button id="resetView1">reset3d</button>
                     </div>
                 </div>
                 <div class="viewer-container" id="viewerContainer2">
                     <canvas id="threeCanvas2"></canvas>
                     <div class="viewer-controls">
+                        <button id="resetView2">reset3d</button>
                     </div>
                 </div>
             </div>
@@ -346,7 +348,7 @@
                     roughness: 0.8
                 });
 
-                const geometry = new THREE.PlaneGeometry(8, 8, 128, 12);
+                const geometry = new THREE.PlaneGeometry(8, 8, 1280, 1280);
                 mesh1 = new THREE.Mesh(geometry, material);
                 scene1.add(mesh1);
             }
@@ -408,7 +410,7 @@
                     roughness: 0.8
                 });
 
-                const geometry = new THREE.PlaneGeometry(8, 8, 128, 128);
+                const geometry = new THREE.PlaneGeometry(8, 8, 1280, 1280);
                 mesh2 = new THREE.Mesh(geometry, material);
                 scene2.add(mesh2);
             }
@@ -489,7 +491,7 @@
 
                 const viewerWidth = document.getElementById('viewerContainer1').offsetWidth;
                 const viewerHeight = document.getElementById('viewerContainer1').offsetHeight;
-                const baseWidth = 6.8 * (targetFlatTopWidth / viewerWidth) * currentAspectRatio;
+                const baseWidth = 8 * (targetFlatTopWidth / viewerWidth) * currentAspectRatio;
                 const baseHeight = 10 * (targetFlatTopHeight / viewerHeight);
 
                 const geometry1 = new THREE.PlaneGeometry(baseWidth, baseHeight, imageData.width, imageData.height);
@@ -501,9 +503,9 @@
                 mesh2.geometry = geometry2;
 
                 const maxDim = Math.max(baseWidth, baseHeight);
-                camera1.position.set(0.083, 0, maxDim * 0.47);
+                camera1.position.set(0.083, 0, maxDim * 0.49);
                 camera1.lookAt(0, 0, 0);
-                camera2.position.set(-0.083, 0, maxDim * 0.47);
+                camera2.position.set(-0.083, 0, maxDim * 0.49);
                 camera2.lookAt(0, 0, 0);
 
                 if (texture1) texture1.dispose();
@@ -556,7 +558,7 @@
 
                 const filteredImg = document.createElement('img');
                 filteredImg.src = filteredCanvas.toDataURL('image/png');
-                filteredImg.alt = 'Filtered  ' + (screenshotCounter + 1);
+                filteredImg.alt = 'Filtered 截图 ' + (screenshotCounter + 1);
 
                 screenshotList.innerHTML = '';
                 screenshotCounter = 0;
@@ -634,7 +636,7 @@
                 placeholderDispCtx1.fillRect(0, 0, 256, 256);
                 displacementMap1 = new THREE.CanvasTexture(placeholderDispCanvas1);
 
-                const geometry1 = new THREE.PlaneGeometry(8, 8, 128, 128);
+                const geometry1 = new THREE.PlaneGeometry(8, 8, 1280, 1280);
                 mesh1.geometry.dispose();
                 mesh1.geometry = geometry1;
 
@@ -655,7 +657,7 @@
                 placeholderDispCtx2.fillRect(0, 0, 256, 256);
                 displacementMap2 = new THREE.CanvasTexture(placeholderDispCanvas2);
 
-                const geometry2 = new THREE.PlaneGeometry(8, 8, 128, 128);
+                const geometry2 = new THREE.PlaneGeometry(8, 8, 1280, 1280);
                 mesh2.geometry.dispose();
                 mesh2.geometry = geometry2;
 
@@ -669,13 +671,13 @@
 
             resetViewBtn1.addEventListener('click', function() {
                 const maxDim = Math.max(8, 8 / currentAspectRatio);
-                camera1.position.set(0, 0, maxDim * 0.47);
+                camera1.position.set(0, 0, maxDim * 0.8);
                 camera1.lookAt(0, 0, 0);
             });
 
             resetViewBtn2.addEventListener('click', function() {
                 const maxDim = Math.max(8, 8 / currentAspectRatio);
-                camera2.position.set(0, 0, maxDim * 0.47);
+                camera2.position.set(0, 0, maxDim * 0.8);
                 camera2.lookAt(0, 0, 0);
             });
 
