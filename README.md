@@ -8,7 +8,7 @@ download recordRTC on git
 
 put this project files in their simple demo folder (no need of hosting)
 
-open "vr99.html"
+open "vr96 screen 13.html"
 
 click buttons, select screens, notifications(capture and screenshot)
 
