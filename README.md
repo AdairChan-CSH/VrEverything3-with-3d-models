@@ -28,4 +28,6 @@ enjoy pain-free VR desktop without crashing to any StreamVR bugs!
 
 This program provide VR depth immersive and excitement automatically.
 
+Try lower resolution for speed, narrow screen for you eyes vr feeling.
+
 Author : Adair Chan
