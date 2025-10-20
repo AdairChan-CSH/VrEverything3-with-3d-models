@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VReverything3</title>
+    <style>
+        html, body, video {
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: black;
+        }
+
+        video {
+            width: 68%;
+        }
+
+        .grid {
+            text-align: center;
+            display: grid;
+            width: 100%;
+            grid-gap: -5px;
+            grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ff7e5f, #feb47b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .description {
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+            color: #e0e0e0;
+        }
+
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .viewers-container {
+            display: flex;
+            flex: 2;
+            gap: 20px;
+            min-width: 300px;
+        }
+
+        .video-container {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .screenshots-container {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #video-preview {
+            width: 68%;
+            border-radius: 10px;
+            background: #000;
+        }
+
+        .controls2 {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #fdbb2d;
+            color: #1a2a6c;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #ffcc44;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #screenshotList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .screenshot-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .screenshot-item img {
+            width: 100%;
+            display: block;
+        }
+
+        .screenshot-time {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px;
+            text-align: center;
+        }
+
+        .status {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .viewer-container {
+            flex: 1;
+            min-height: 600px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid white;
+        }
+
+        #threeCanvas, #threeCanvas2 {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .viewer-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .viewers-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .viewer-container {
+                min-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>VReverything3</h1>
+    <button id="btn-start-recording">Start Recording</button>
+    <button id="btn-stop-recording" disabled>Stop Recording</button>
+    <hr>
+    
+    <div>
+        <h2><font color="white">Original Camera</font></h2>
+        <h2><font color="white">Original Camera</font></h2>
+        <h2><font color="white">Original Camera</font></h2>
+        <h2><font color="white">Original Camera</font></h2>
+        <h2><font color="white">Original Camera</font></h2>
+        <div class="main-content">
+            <div class="grid">
+                <div class="viewer-container" id="viewerContainer1">
+                    <canvas id="threeCanvas"></canvas>
+                              <div class="viewer-controls">
+                        <button id="resetView1">reset3d</button>
+                    </div>
+                </div>
+                <div class="viewer-container" id="viewerContainer2">
+                    <canvas id="threeCanvas2"></canvas>
+                    <div class="viewer-controls">
+                        <button id="resetView2">reset3d</button>
+                    </div>
+                </div>
+            </div>
+            <div class="grid">
+            <div class="video-container">
+                <video id="video-preview" controls autoplay playsinline></video>
+                </div>
+<div class="grid2"><iframe style="width: 68%;height:130%;" src="video-mirror-recording33.html"></iframe></div></div><div class="controls2">
+                    <button id="captureNow">instant screenshot</button>
+                    <button id="clearScreenshots">clear</button>
+                </div>
+                <div class="status">
+                    <p>status: <span id="statusText">stopped</span></p>
+                    <p>count <span id="screenshotCount">0</span></p>
+                </div>
+            </div>
+            <div class="screenshots-container">
+                <h2>screenshot show (Filtered) (<span id="screenshotCount">0</span>)</h2>
+                <div id="screenshotList"></div>
+            </div>
+        </div>
+    </div>
+    <script src="/RecordRTC.js"></script>
+    <script src="rr.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script>"use strict";
+        document.addEventListener('DOMContentLoaded',async function() {
+            // 获取DOM元素
+            const video = document.getElementById('video-preview');
+            const captureNowBtn = document.getElementById('captureNow');
+            const clearBtn = document.getElementById('clearScreenshots');
+            const screenshotList = document.getElementById('screenshotList');
+            const statusText = document.getElementById('statusText');
+            const screenshotCount = document.getElementById('screenshotCount');
+            const resetViewBtn1 = document.getElementById('resetView1');
+            const resetViewBtn2 = document.getElementById('resetView2');
+
+            let screenshotInterval = 0.0000004;
+            let screenshotCounter = 0;
+            let isCapturing = false;
+
+            // Three.js相关变量 (Viewer 1)
+            let scene1, camera1, renderer1, mesh1, texture1, displacementMap1;
+            let currentAspectRatio = 1.1; // 默认宽高比
+
+            // Three.js相关变量 (Viewer 2)
+            let scene2, camera2, renderer2, mesh2, texture2, displacementMap2;
+
+            // 初始化Three.js场景 (Viewer 1)
+            function initThreeJS1() {
+                scene1 = new THREE.Scene();
+                camera1 = new THREE.PerspectiveCamera(
+                    75,
+                    document.getElementById('viewerContainer1').offsetWidth /
+                    document.getElementById('viewerContainer1').offsetHeight,
+                    0.1,
+                    1000
+                );
+                camera1.position.set(0, 0, 19);
+                camera1.lookAt(0, 0, 0);
+
+                renderer1 = new THREE.WebGLRenderer({
+                    canvas: document.getElementById('threeCanvas'),
+                    antialias: true,
+                    alpha: true
+                });
+                renderer1.setSize(
+                    document.getElementById('viewerContainer1').offsetWidth,
+                    document.getElementById('viewerContainer1').offsetHeight
+                );
+
+                const ambientLight = new THREE.AmbientLight(0xcccccc, 0.8);
+                scene1.add(ambientLight);
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(1, 1, 1);
+                scene1.add(directionalLight);
+
+                const placeholderCanvas = document.createElement('canvas');
+                placeholderCanvas.width = 256;
+                placeholderCanvas.height = 256;
+                const placeholderCtx = placeholderCanvas.getContext('2d');
+                placeholderCtx.fillStyle = '#2c5364';
+                placeholderCtx.fillRect(0, 0, 256, 256);
+                placeholderCtx.fillStyle = '#203a43';
+                placeholderCtx.font = '20px Arial';
+                placeholderCtx.textAlign = 'center';
+                placeholderCtx.fillText('3d vr', 128, 128);
+                texture1 = new THREE.CanvasTexture(placeholderCanvas);
+
+                const placeholderDispCanvas = document.createElement('canvas');
+                placeholderDispCanvas.width = 256;
+                placeholderDispCanvas.height = 256;
+                const placeholderDispCtx = placeholderDispCanvas.getContext('2d');
+                placeholderDispCtx.fillStyle = '#000000';
+                placeholderDispCtx.fillRect(0, 0, 256, 256);
+                displacementMap1 = new THREE.CanvasTexture(placeholderDispCanvas);
+
+                const material = new THREE.MeshStandardMaterial({
+                    map: texture1,
+                    displacementMap: displacementMap1,
+                    displacementScale: 0.18,
+                    metalness: 0.8,
+                    roughness: 0.8
+                });
+
+                const geometry = new THREE.PlaneGeometry(8, 8, 128, 128);
+                mesh1 = new THREE.Mesh(geometry, material);
+                scene1.add(mesh1);
+            }
+
+            // 初始化Three.js场景 (Viewer 2)
+            function initThreeJS2() {
+                scene2 = new THREE.Scene();
+                camera2 = new THREE.PerspectiveCamera(
+                    75,
+                    document.getElementById('viewerContainer2').offsetWidth /
+                    document.getElementById('viewerContainer2').offsetHeight,
+                    0.1,
+                    1000
+                );
+                camera2.position.set(0, 0, 19);
+                camera2.lookAt(0, 0, 0);
+
+                renderer2 = new THREE.WebGLRenderer({
+                    canvas: document.getElementById('threeCanvas2'),
+                    antialias: true,
+                    alpha: true
+                });
+                renderer2.setSize(
+                    document.getElementById('viewerContainer2').offsetWidth,
+                    document.getElementById('viewerContainer2').offsetHeight
+                );
+
+                const ambientLight = new THREE.AmbientLight(0xcccccc, 0.8);
+                scene2.add(ambientLight);
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(1, 1, 1);
+                scene2.add(directionalLight);
+
+                const placeholderCanvas = document.createElement('canvas');
+                placeholderCanvas.width = 256;
+                placeholderCanvas.height = 256;
+                const placeholderCtx = placeholderCanvas.getContext('2d');
+                placeholderCtx.fillStyle = '#2c5364';
+                placeholderCtx.fillRect(0, 0, 256, 256);
+                placeholderCtx.fillStyle = '#203a43';
+                placeholderCtx.font = '20px Arial';
+                placeholderCtx.textAlign = 'center';
+                placeholderCtx.fillText('3d vr', 128, 128);
+                texture2 = new THREE.CanvasTexture(placeholderCanvas);
+
+                const placeholderDispCanvas = document.createElement('canvas');
+                placeholderDispCanvas.width = 256;
+                placeholderDispCanvas.height = 256;
+                const placeholderDispCtx = placeholderDispCanvas.getContext('2d');
+                placeholderDispCtx.fillStyle = '#000000';
+                placeholderDispCtx.fillRect(0, 0, 256, 256);
+                displacementMap2 = new THREE.CanvasTexture(placeholderDispCanvas);
+
+                const material = new THREE.MeshStandardMaterial({
+                    map: texture2,
+                    displacementMap: displacementMap2,
+                    displacementScale: 0.18,
+                    metalness: 0.8,
+                    roughness: 0.8
+                });
+
+                const geometry = new THREE.PlaneGeometry(8, 8, 128, 128);
+                mesh2 = new THREE.Mesh(geometry, material);
+                scene2.add(mesh2);
+            }
+            // 窗口大小调整
+            function onWindowResize() {
+                camera1.aspect = document.getElementById('viewerContainer1').offsetWidth /
+                                 document.getElementById('viewerContainer1').offsetHeight;
+                camera1.updateProjectionMatrix();
+                renderer1.setSize(
+                    document.getElementById('viewerContainer1').offsetWidth,
+                    document.getElementById('viewerContainer1').offsetHeight
+                );
+
+                camera2.aspect = document.getElementById('viewerContainer2').offsetWidth /
+                                 document.getElementById('viewerContainer2').offsetHeight;
+                camera2.updateProjectionMatrix();
+                renderer2.setSize(
+                    document.getElementById('viewerContainer2').offsetWidth,
+                    document.getElementById('viewerContainer2').offsetHeight
+                );
+            }
+            // 动画循环
+            function animate() {
+                requestAnimationFrame(animate);
+                renderer1.render(scene1, camera1);
+                renderer2.render(scene2, camera2);
+            }
+            // 生成位移贴图
+            function generateDisplacementMap(imageData) {
+                const canvas = document.createElement('canvas');
+                canvas.width = imageData.width;
+                canvas.height = imageData.height;
+                const ctx = canvas.getContext('2d');
+                ctx.putImageData(imageData, 0, 0);
+
+                const dispCanvas = document.createElement('canvas');
+                dispCanvas.width = imageData.width;
+                dispCanvas.height = imageData.height;
+                const dispCtx = dispCanvas.getContext('2d');
+                dispCtx.drawImage(canvas, 0, 0);
+
+                const imgData = dispCtx.getImageData(0, 0, dispCanvas.width, dispCanvas.height);
+                const data = imgData.data;
+
+                const maxHeight = 64.1; // Threshold for flat tops
+                for (let i = 0; i < data.length; i += 4) {
+                    const brightness = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114) / 255;
+                    const value = Math.min(Math.round(brightness * 255), maxHeight);
+                    data[i] = value;
+                    data[i + 1] = value;
+                    data[i + 2] = value;
+                    data[i + 3] = 255;
+                }
+
+                dispCtx.putImageData(imgData, 0, 0);
+                return dispCanvas;
+            }
+
+"use strict";
+
+            // 更新3D视图
+            async function update3DView(imageData) {
+                const canvas = document.createElement('canvas');
+                canvas.width = imageData.width;
+                canvas.height = imageData.height;
+                const ctx = canvas.getContext('2d');
+                ctx.putImageData(imageData, 0, 0);
+
+                currentAspectRatio = imageData.width / imageData.height;
+
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
+
+                const flatTopScale = 0.1;
+                const targetFlatTopWidth = screenWidth * flatTopScale;
+                const targetFlatTopHeight = screenHeight * flatTopScale;
+
+                const viewerWidth = document.getElementById('viewerContainer1').offsetWidth;
+                const viewerHeight = document.getElementById('viewerContainer1').offsetHeight;
+                const baseWidth = 6.8 * (targetFlatTopWidth / viewerWidth) * currentAspectRatio;
+                const baseHeight = 10 * (targetFlatTopHeight / viewerHeight);
+
+                const geometry1 = new THREE.PlaneGeometry(baseWidth, baseHeight, imageData.width, imageData.height);
+                mesh1.geometry.dispose();
+                mesh1.geometry = geometry1;
+
+                const geometry2 = new THREE.PlaneGeometry(baseWidth, baseHeight, imageData.width, imageData.height);
+                mesh2.geometry.dispose();
+                mesh2.geometry = geometry2;
+
+                const maxDim = Math.max(baseWidth, baseHeight);
+                camera1.position.set(0.083, 0, maxDim * 0.49);
+                camera1.lookAt(0, 0, 0);
+                camera2.position.set(-0.083, 0, maxDim * 0.49);
+                camera2.lookAt(0, 0, 0);
+
+                if (texture1) texture1.dispose();
+                texture1 = new THREE.CanvasTexture(canvas);
+                if (texture2) texture2.dispose();
+                texture2 = new THREE.CanvasTexture(canvas);
+
+                const dispCanvas = generateDisplacementMap(imageData);
+                if (displacementMap1) displacementMap1.dispose();
+                displacementMap1 = new THREE.CanvasTexture(dispCanvas);
+                if (displacementMap2) displacementMap2.dispose();
+                displacementMap2 = new THREE.CanvasTexture(dispCanvas);
+
+                mesh1.material.map = texture1;
+                mesh1.material.displacementMap = displacementMap1;
+                mesh1.material.displacementScale = 0.93;
+                mesh1.material.needsUpdate = true;
+
+                mesh2.material.map = texture2;
+                mesh2.material.displacementMap = displacementMap2;
+                mesh2.material.displacementScale = 0.93;
+                mesh2.material.needsUpdate = true;
+            }
+
+            // 创建画布用于截图
+            const filteredCanvas = document.createElement('canvas');
+            const filteredCtx = filteredCanvas.getContext('2d');
+"use strict";
+            // 截图功能
+            async function captureScreenshot() {
+                if (video.paused || video.ended) return;
+
+                const computedStyle = getComputedStyle(video);
+                const filterStyle = computedStyle.filter || 'none';
+
+                // Filtered capture
+                filteredCanvas.width = video.videoWidth;
+                filteredCanvas.height = video.videoHeight;
+                filteredCtx.filter = filterStyle;
+                filteredCtx.drawImage(video, 0, 0, filteredCanvas.width, filteredCanvas.height);
+                const filteredImageData = filteredCtx.getImageData(0, 0, filteredCanvas.width, filteredCanvas.height);
+                filteredCtx.filter = 'none';
+
+                const now = new Date();
+                const timeString = now.toLocaleTimeString();
+
+                // Filtered screenshot
+                const filteredScreenshotItem = document.createElement('div');
+                filteredScreenshotItem.className = 'screenshot-item';
+
+                const filteredImg = document.createElement('img');
+                filteredImg.src = filteredCanvas.toDataURL('image/png');
+                filteredImg.alt = 'Filtered  ' + (screenshotCounter + 1);
+
+                screenshotList.innerHTML = '';
+                screenshotCounter = 0;
+                screenshotCount.textContent = '0';
+
+                const filteredTimeSpan = document.createElement('div');
+                filteredTimeSpan.className = 'screenshot-time';
+                filteredTimeSpan.textContent = timeString;
+
+                filteredScreenshotItem.appendChild(filteredImg);
+                filteredScreenshotItem.appendChild(filteredTimeSpan);
+                screenshotList.appendChild(filteredScreenshotItem);
+
+                screenshotCounter++;
+                screenshotCount.textContent = screenshotCounter;
+                screenshotList.scrollTop = screenshotList.scrollHeight;
+
+                // Update both 3D views with filtered screenshot
+                update3DView(filteredImageData);
+            }
+
+            // Start screenshot capture at 20 FPS when video plays
+            video.addEventListener('play', function() {
+                if (!isCapturing) {
+                    screenshotInterval = setInterval(captureScreenshot, 80); // 1000ms / 20 = 50ms for 20 FPS
+                    statusText.textContent = 'running';
+                    isCapturing = true;
+                }
+            });
+
+            // Stop screenshot capture when video pauses or ends
+            video.addEventListener('pause', function() {
+                if (isCapturing) {
+                    clearInterval(screenshotInterval);
+                    statusText.textContent = 'stopped';
+                    isCapturing = false;
+                }
+            });
+
+            video.addEventListener('ended', function() {
+                if (isCapturing) {
+                    clearInterval(screenshotInterval);
+                    statusText.textContent = 'stopped (stream end)';
+                    isCapturing = false;
+                }
+            });
+
+            captureNowBtn.addEventListener('click', function() {
+                captureScreenshot();
+            });
+
+            clearBtn.addEventListener('click', function() {
+                screenshotList.innerHTML = '';
+                screenshotCounter = 0;
+                screenshotCount.textContent = '0';
+
+                const placeholderCanvas = document.createElement('canvas');
+                placeholderCanvas.width = 256;
+                placeholderCanvas.height = 256;
+                const placeholderCtx = placeholderCanvas.getContext('2d');
+                placeholderCtx.fillStyle = '#2c5364';
+                placeholderCtx.fillRect(0, 0, 256, 256);
+                placeholderCtx.fillStyle = '#203a43';
+                placeholderCtx.font = '20px Arial';
+                placeholderCtx.textAlign = 'center';
+                placeholderCtx.fillText('check', 128, 128);
+
+                // Viewer 1
+                texture1 = new THREE.CanvasTexture(placeholderCanvas);
+                const placeholderDispCanvas1 = document.createElement('canvas');
+                placeholderDispCanvas1.width = 256;
+                placeholderDispCanvas1.height = 256;
+                const placeholderDispCtx1 = placeholderDispCanvas1.getContext('2d');
+                placeholderDispCtx1.fillStyle = '#000000';
+                placeholderDispCtx1.fillRect(0, 0, 256, 256);
+                displacementMap1 = new THREE.CanvasTexture(placeholderDispCanvas1);
+
+                const geometry1 = new THREE.PlaneGeometry(8, 8, 1280, 1280);
+                mesh1.geometry.dispose();
+                mesh1.geometry = geometry1;
+
+                mesh1.material.map = texture1;
+                mesh1.material.displacementMap = displacementMap1;
+                mesh1.material.needsUpdate = true;
+
+                camera1.position.set(53, 0, 10);
+                camera1.lookAt(0, 0, 0);
+
+                // Viewer 2
+                texture2 = new THREE.CanvasTexture(placeholderCanvas);
+                const placeholderDispCanvas2 = document.createElement('canvas');
+                placeholderDispCanvas2.width = 256;
+                placeholderDispCanvas2.height = 256;
+                const placeholderDispCtx2 = placeholderDispCanvas2.getContext('2d');
+                placeholderDispCtx2.fillStyle = '#000000';
+                placeholderDispCtx2.fillRect(0, 0, 256, 256);
+                displacementMap2 = new THREE.CanvasTexture(placeholderDispCanvas2);
+
+                const geometry2 = new THREE.PlaneGeometry(8, 8, 1280, 1280);
+                mesh2.geometry.dispose();
+                mesh2.geometry = geometry2;
+
+                mesh2.material.map = texture2;
+                mesh2.material.displacementMap = displacementMap2;
+                mesh2.material.needsUpdate = true;
+
+                camera2.position.set(-53, 0, 10);
+                camera2.lookAt(0, 0, 0);
+            });
+
+            resetViewBtn1.addEventListener('click', function() {
+                const maxDim = Math.max(8, 8 / currentAspectRatio);
+                camera1.position.set(0, 0, maxDim * 0.8);
+                camera1.lookAt(0, 0, 0);
+            });
+
+            resetViewBtn2.addEventListener('click', function() {
+                const maxDim = Math.max(8, 8 / currentAspectRatio);
+                camera2.position.set(0, 0, maxDim * 0.8);
+                camera2.lookAt(0, 0, 0);
+            });
+
+            window.addEventListener('resize', onWindowResize);
+            initThreeJS1();
+            initThreeJS2();
+            animate();
+        });
+    </script>
+    <script>
+        function invokeGetDisplayMedia(success, error) {
+            var displaymediastreamconstraints = {
+                video: {
+                    displaySurface: 'monitor',
+                    logicalSurface: true,
+                    cursor: 'always'
+                }
+            };
+            displaymediastreamconstraints = { video: true };
+            if (navigator.mediaDevices.getDisplayMedia) {
+                navigator.mediaDevices.getDisplayMedia(displaymediastreamconstraints).then(success).catch(error);
+            } else {
+                navigator.getDisplayMedia(displaymediastreamconstraints).then(success).catch(error);
+            }
+        }
+
+        function captureScreen(callback) {
+            invokeGetDisplayMedia(function(screen) {
+                addStreamStopListener(screen, function() {
+                    document.getElementById('btn-stop-recording').click();
+                });
+                callback(screen);
+            }, function(error) {
+                console.error(error);
+                alert('Unable to capture your screen. Please check console logs.\n' + error);
+            });
+        }
+
+        function stopRecordingCallback() {
+            const video = document.getElementById('video-preview');
+            video.src = video.srcObject = null;
+            video.src = URL.createObjectURL(recorder.getBlob());
+            recorder.screen.stop();
+            recorder.destroy();
+            recorder = null;
+            document.getElementById('btn-start-recording').disabled = false;
+        }
+
+        var recorder;
+        document.getElementById('btn-start-recording').onclick = function() {
+            this.disabled = true;
+            captureScreen(function(screen) {
+                const video = document.getElementById('video-preview');
+                video.srcObject = screen;
+                recorder = RecordRTC(screen, { type: 'video' });
+                recorder.startRecording();
+                recorder.screen = screen;
+                document.getElementById('btn-stop-recording').disabled = false;
+            });
+        };
+
+        document.getElementById('btn-stop-recording').onclick = function() {
+            this.disabled = true;
+            recorder.stopRecording(stopRecordingCallback);
+        };
+
+        function addStreamStopListener(stream, callback) {
+            stream.addEventListener('ended', function() {
+                callback();
+                callback = function() {};
+            }, false);
+            stream.addEventListener('inactive', function() {
+                callback();
+                callback = function() {};
+            }, false);
+            stream.getTracks().forEach(function(track) {
+                track.addEventListener('ended', function() {
+                    callback();
+                    callback = function() {};
+                }, false);
+                track.addEventListener('inactive', function() {
+                    callback();
+                    callback = function() {};
+                }, false);
+            });
+        }
+
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(function(camera) {
+            const videoPreview = document.getElementById('video-preview');
+            videoPreview.muted = true;
+            videoPreview.srcObject = camera;
+
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            canvas.style = 'position: absolute; top: -9999999999px; left: -9999999999px; z-index: -1;';
+            document.body.appendChild(canvas);
+
+            var canvasStream = canvas.captureStream();
+            var audioPlusCanvasStream = new MediaStream();
+            canvasStream.getVideoTracks().forEach(function(videoTrack) {
+                audioPlusCanvasStream.addTrack(videoTrack);
+            });
+            camera.getAudioTracks().forEach(function(audioTrack) {
+                audioPlusCanvasStream.addTrack(audioTrack);
+            });
+
+            var recorder = RecordRTC(audioPlusCanvasStream, { type: 'video' });
+            recorder.setRecordingDuration(5 * 1000).onRecordingStopped(function() {
+                var blob = recorder.getBlob();
+                recorder = null;
+                camera.getTracks().forEach(track => track.stop());
+                canvas.remove();
+                videoPreview.muted = false;
+                videoPreview.src = URL.createObjectURL(blob);
+            });
+
+            recorder.startRecording();
+
+            (function looper() {
+                canvas.width = videoPreview.clientWidth;
+                canvas.height = videoPreview.clientHeight;
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.save();
+                context.translate(canvas.width, 0);
+                context.scale(-1, 1);
+                context.drawImage(videoPreview, 0, 0, canvas.width, canvas.height);
+                context.restore();
+                setTimeout(looper, 1);
+            })();
+        }).catch(function(error) {
+            alert('Unable to capture camera. Please check console logs.');
+            console.error(error);
+        });
+    </script>
+    <br><br><br><br><br>
+    <font color="white">Click this button and put back to make it start to work</font><br>
+    <label>Blur</label>
+    <input type="range" min="1.13" max="10" value="1.33" step="0.1" onchange="applyFilter()" data-filter="blur" data-scale="px"><br>
+    <label>Brightness</label>
+    <input type="range" min="0" max="200" value="100" step="1" onchange="applyFilter()" data-filter="brightness" data-scale="%"><br>
+    <label>Contrast</label>
+    <input type="range" min="0" max="200" value="133" step="1" onchange="applyFilter()" data-filter="contrast" data-scale="%"><br>
+    <label>Grayscale</label>
+    <input type="range" min="0" max="100" value="100" step="1" onchange="applyFilter()" data-filter="grayscale" data-scale="%"><br>
+    <label>Hue Rotate</label>
+    <input type="range" min="0" max="360" value="360" step="1" onchange="applyFilter()" data-filter="hue-rotate" data-scale="deg"><br>
+    <label>Invert</label>
+    <input type="range" min="0" max="100" value="0" step="1" onchange="applyFilter()" data-filter="invert" data-scale="%"><br>
+    <label>Opacity</label>
+    <input type="range" min="0" max="100" value="100" step="1" onchange="applyFilter()" data-filter="opacity" data-scale="%"><br>
+    <label>Saturate</label>
+    <input type="range" min="1" max="100" value="1" step="1" onchange="applyFilter()" data-filter="saturate" data-scale=""><br>
+    <label>Sepia</label>
+    <input type="range" min="0" max="100" value="0" step="1" onchange="applyFilter()" data-filter="sepia" data-scale="%"><br>
+    <script>
+        var image = document.querySelector('video');
+        var filterControls = document.querySelectorAll('input[type=range]');
+        function applyFilter() {
+            var computedFilters = '';
+            filterControls.forEach(function(item) {
+                computedFilters += item.getAttribute('data-filter') + '(' + item.value + item.getAttribute('data-scale') + ') ';
+            });
+            image.style.filter = computedFilters;
+        }
+    </script>
+    <iframe style="width: 1%; height: 1%;" src="https://www.videoliveto.com/record/record2.php"></iframe>
+    <footer style="margin-top: 20px;"></footer>
+    <script src="./VRauto -- the software_files/common.js"></script>
+</body>
+</html>
