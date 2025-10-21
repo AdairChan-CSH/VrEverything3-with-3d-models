@@ -29,5 +29,6 @@ enjoy pain-free VR desktop without crashing to any StreamVR bugs!
 This program provide VR depth immersive and excitement automatically.
 
 Try lower resolution for speed, narrow screen for you eyes vr feeling.
+Running speed is depends on your display card's slot toughness.
 
 Author : Adair Chan
