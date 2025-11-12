@@ -8,7 +8,7 @@ How to use:
 
 download recordRTC on git
 
-put this project files in their simple demo folder (no need of hosting)
+put this project files in their simple demo2 folder (no need of hosting)
 
 open "vr96a111.html"
 
