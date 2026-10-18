@@ -10,7 +10,7 @@ download recordRTC on git
 
 put this project files in their simple demo2 folder (no need of hosting)
 
-open "vr96a111.html"
+open "Faster version***.html"
 
 click buttons, select screens, notifications(capture and screenshot)
 
