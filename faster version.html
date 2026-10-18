@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VReverything3</title>
+    <style>
+        html, body, video {
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: black;
+        }
+        video { width: 68%; }
+        .grid {
+            text-align: center;
+            display: grid;
+            width: 100%;
+            grid-gap: -5px;
+            grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr);
+        }
+        * {
+            margin: 0; padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .main-content {
+            display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 30px;
+        }
+        .video-container, .screenshots-container {
+            flex: 1; min-width: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px; border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        #video-preview {
+            width: 68%; border-radius: 10px; background: #000;
+        }
+        .controls2 {
+            display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;
+        }
+        button {
+            padding: 10px 20px; border: none; border-radius: 5px;
+            background: #fdbb2d; color: #1a2a6c; font-weight: bold;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        button:hover { background: #ffcc44; transform: translateY(-2px); }
+        button:active { transform: translateY(0); }
+        #screenshotList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px; margin-top: 15px; max-height: 500px;
+            overflow-y: auto; padding: 10px;
+            background: rgba(0, 0, 0, 0.2); border-radius: 10px;
+        }
+        .screenshot-item {
+            position: relative; border-radius: 8px; overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        .screenshot-item img { width: 100%; display: block; }
+        .screenshot-time {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: rgba(0, 0, 0, 0.7); color: white;
+            font-size: 0.7rem; padding: 3px; text-align: center;
+        }
+        .status { margin-top: 15px; text-align: center; font-size: 1.1rem; color: white; }
+        .viewer-container {
+            flex: 1; min-height: 600px;
+            background: rgba(0, 0, 0, 0.2); border-radius: 15px;
+            overflow: hidden; position: relative; border: 2px solid white;
+        }
+        #threeCanvas, #threeCanvas2 {
+            width: 100%; height: 100%; display: block;
+        }
+        .viewer-controls {
+            position: absolute; bottom: 20px; left: 50%;
+            transform: translateX(-50%); display: flex; gap: 10px; z-index: 10;
+        }
+        .container2 {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; height: 100vh;
+        }
+        #imageDisplay2 {
+            max-width: 95%; max-height: 85vh;
+            border: 3px solid #0f0;
+            box-shadow: 0 0 40px rgba(0, 255, 0, 0.8);
+            image-rendering: pixelated;
+        }
+        .info {
+            margin-top: 15px; font-size: 18px; text-shadow: 0 0 10px #0f0; color: #0f0;
+        }
+        .counter { margin-top: 10px; font-size: 14px; color: #0a0; }
+        .controls { margin-top: 20px; }
+        button {
+            padding: 10px 20px; margin: 5px;
+            font-family: 'Courier New', monospace;
+            background: #001100; color: #0f0;
+            border: 2px solid #0f0; cursor: pointer;
+        }
+        button:hover { background: #003300; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        @media (max-width: 768px) {
+            .main-content { flex-direction: column; }
+            .viewer-container { min-height: 400px; }
+        }
+    </style>
+</head>
+<body>
+    <h1 style="color:white; text-align:center;">VReverything3</h1>
+    <div style="text-align:center; margin-bottom:10px;">
+        <button id="btn-start-recording">----------</button>
+        <button id="btn-stop-recording" disabled>---------</button>
+    </div>
+    <hr>
+    
+    <div>
+        <h2 style="color:white; text-align:center;">3D Viewers (from imageDisplay)</h2>
+        <div class="main-content">
+            <div class="grid">
+                <div class="viewer-container" id="viewerContainer1">
+                    <canvas id="threeCanvas"></canvas>
+                    <div class="viewer-controls">
+                        <button id="resetView1">reset3d</button>
+                    </div>
+                </div>
+                <div class="viewer-container" id="viewerContainer2">
+                    <canvas id="threeCanvas2"></canvas>
+                    <div class="viewer-controls">
+                        <button id="resetView2">reset3d</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls2" style="justify-content:center; width:100%;">
+                <button id="start3D">Start 3D (press secondly)</button>
+                <button id="stop3D" disabled>Stop 3D</button>
+                <button id="captureNow">Force Update 3D</button>
+            </div>
+            <div class="status">
+                <p>status: <span id="statusText">3D stopped</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container2">
+        <h1>Nanosecond Desktop Stream → imageDisplay2</h1>
+        <img id="imageDisplay2" src="" alt="Live desktop">
+        <div class="info">
+            Live Desktop Capture • Click anywhere to toggle pause
+        </div>
+        <div class="counter" id="counter2">Status: Idle</div>
+        <div class="controls">
+            <button id="startCapture2">Start Live Desktop Capture(press first)</button>
+            <button id="stopCapture2" disabled>Stop Capture</button>
+            <button id="switchMode2">----------</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- ========== CAPTURE → imageDisplay only ========== -->
+    <script>
+        const imageDisplay2 = document.getElementById('imageDisplay2');
+        const counterElement2 = document.getElementById('counter2');
+        const startBtn2 = document.getElementById('startCapture2');
+        const stopBtn2 = document.getElementById('stopCapture2');
+        const switchBtn2 = document.getElementById('switchMode2');
+
+        let stream2 = null;
+        let video2 = null;
+        let intervalId2 = null;
+        let isCapturing2 = false;
+        let isLocalMode2 = false;
+        let isPaused2 = false;
+
+        const folderPath2 = "file:///C:/Users/A/Desktop/images/";
+        const baseFilename2 = "image";
+        const fileExtension2 = ".jpg";
+        const totalImages2 = 100;
+        let currentIndex2 = 0;
+        let imageCount2 = 0;
+        let localInterval2 = null;
+
+        function createVideo2() {
+            video2 = document.createElement('video');
+            video2.style.display = 'none';
+            document.body.appendChild(video2);
+            return video2;
+        }
+
+        async function startLiveCapture2() {
+            if (isCapturing2) return;
+            try {
+                stream2 = await navigator.mediaDevices.getDisplayMedia({
+                    video: { cursor: "always" },
+                    audio: false
+                });
+                video2 = createVideo2();
+                video2.srcObject = stream2;
+                await video2.play();
+
+                isCapturing2 = true;
+                isLocalMode2 = false;
+                startBtn2.disabled = true;
+                stopBtn2.disabled = false;
+                switchBtn2.textContent = "Switch to Local Image Cycle";
+                counterElement2.textContent = 'Status: Live Desktop Capturing...';
+
+                intervalId2 = setInterval(() => {
+                    if (!isPaused2 && video2 && video2.videoWidth > 0) {
+                        const canvas2 = document.createElement('canvas');
+                        canvas2.width = video2.videoWidth;
+                        canvas2.height = video2.videoHeight;
+                        const ctx2 = canvas2.getContext('2d');
+                        ctx2.drawImage(video2, 0, 0);
+                        imageDisplay2.src = canvas2.toDataURL('image/jpeg', 0.85);
+                        canvas2.remove();
+                    }
+                }, 16); // ~60fps is more stable than 1ms
+            } catch (err) {
+                console.error("Capture error:", err);
+                counterElement2.textContent = 'Status: Permission denied or error';
+            }
+        }
+
+        function stopCapture2() {
+            if (intervalId2) { clearInterval(intervalId2); intervalId2 = null; }
+            if (localInterval2) { clearInterval(localInterval2); localInterval2 = null; }
+            if (stream2) {
+                stream2.getTracks().forEach(track => track.stop());
+                stream2 = null;
+            }
+            if (video2) { video2.remove(); video2 = null; }
+            isCapturing2 = false;
+            startBtn2.disabled = false;
+            stopBtn2.disabled = true;
+            counterElement2.textContent = 'Status: Stopped';
+        }
+
+        function loadNextLocalImage2() {
+            if (isPaused2) return;
+            currentIndex2 = (currentIndex2 % totalImages2) + 1;
+            const imageUrl2 = `${folderPath2}${baseFilename2}${currentIndex2}${fileExtension2}`;
+            imageDisplay2.src = `${imageUrl2}?t=${Date.now()}`;
+            imageCount2++;
+            counterElement2.textContent = `Local Image # ${imageCount2} | Index: ${currentIndex2}`;
+        }
+
+        function startLocalCycle2() {
+            stopCapture2();
+            isLocalMode2 = true;
+            currentIndex2 = 0;
+            imageCount2 = 0;
+            counterElement2.textContent = 'Status: Local Image Cycle Started';
+            localInterval2 = setInterval(loadNextLocalImage2, 30);
+        }
+
+        document.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') return;
+            isPaused2 = !isPaused2;
+            if (isPaused2) counterElement2.textContent += " ← PAUSED";
+        });
+
+        startBtn2.addEventListener('click', startLiveCapture2);
+        stopBtn2.addEventListener('click', stopCapture2);
+        switchBtn2.addEventListener('click', () => {
+            if (isLocalMode2) startLiveCapture2();
+            else startLocalCycle2();
+        });
+
+        window.addEventListener('beforeunload', stopCapture2);
+    </script>
+
+    <!-- ========== 3D reads DIRECTLY from imageDisplay2 (really working) ========== -->
+    <script>
+        "use strict";
+        document.addEventListener('DOMContentLoaded', function() {
+            const start3DBtn = document.getElementById('start3D');
+            const stop3DBtn = document.getElementById('stop3D');
+            const captureNowBtn = document.getElementById('captureNow');
+            const statusText = document.getElementById('statusText');
+            const resetViewBtn1 = document.getElementById('resetView1');
+            const resetViewBtn2 = document.getElementById('resetView2');
+
+            let is3DRunning = false;
+            let interval3D = null;
+            let currentAspectRatio = 1.1;
+
+            let scene1, camera1, renderer1, mesh1, texture1, displacementMap1;
+            let scene2, camera2, renderer2, mesh2, texture2, displacementMap2;
+
+            // Temporary canvas used to read imageDisplay2
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+
+            function initThreeJS1() {
+                scene1 = new THREE.Scene();
+                camera1 = new THREE.PerspectiveCamera(75,
+                    document.getElementById('viewerContainer1').offsetWidth /
+                    document.getElementById('viewerContainer1').offsetHeight, 0.1, 1000);
+                camera1.position.set(0, 0, 12);
+                camera1.lookAt(0, 0, 0);
+
+                renderer1 = new THREE.WebGLRenderer({
+                    canvas: document.getElementById('threeCanvas'),
+                    antialias: true,
+                    alpha: true
+                });
+                renderer1.setSize(
+                    document.getElementById('viewerContainer1').offsetWidth,
+                    document.getElementById('viewerContainer1').offsetHeight
+                );
+                renderer1.setPixelRatio(window.devicePixelRatio);
+
+                scene1.add(new THREE.AmbientLight(0xffffff, 0.7));
+                const dir1 = new THREE.DirectionalLight(0xffffff, 0.9);
+                dir1.position.set(1, 1, 2);
+                scene1.add(dir1);
+
+                // Placeholder
+                const ph = document.createElement('canvas');
+                ph.width = ph.height = 256;
+                const pctx = ph.getContext('2d');
+                pctx.fillStyle = '#111'; pctx.fillRect(0,0,256,256);
+                pctx.fillStyle = '#0f0'; pctx.font = '18px monospace';
+                pctx.textAlign = 'center'; pctx.fillText('Waiting for', 128, 120);
+                pctx.fillText('imageDisplay2', 128, 145);
+                texture1 = new THREE.CanvasTexture(ph);
+                displacementMap1 = new THREE.CanvasTexture(ph);
+
+                const mat = new THREE.MeshStandardMaterial({
+                    map: texture1,
+                    displacementMap: displacementMap1,
+                    displacementScale: 0.6,
+                    metalness: 0.3,
+                    roughness: 0.7
+                });
+                mesh1 = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 128, 128), mat);
+                scene1.add(mesh1);
+            }
+
+            function initThreeJS2() {
+                scene2 = new THREE.Scene();
+                camera2 = new THREE.PerspectiveCamera(75,
+                    document.getElementById('viewerContainer2').offsetWidth /
+                    document.getElementById('viewerContainer2').offsetHeight, 0.1, 1000);
+                camera2.position.set(0, 0, 12);
+                camera2.lookAt(0, 0, 0);
+
+                renderer2 = new THREE.WebGLRenderer({
+                    canvas: document.getElementById('threeCanvas2'),
+                    antialias: true,
+                    alpha: true
+                });
+                renderer2.setSize(
+                    document.getElementById('viewerContainer2').offsetWidth,
+                    document.getElementById('viewerContainer2').offsetHeight
+                );
+                renderer2.setPixelRatio(window.devicePixelRatio);
+
+                scene2.add(new THREE.AmbientLight(0xffffff, 0.7));
+                const dir2 = new THREE.DirectionalLight(0xffffff, 0.9);
+                dir2.position.set(1, 1, 2);
+                scene2.add(dir2);
+
+                const ph = document.createElement('canvas');
+                ph.width = ph.height = 256;
+                const pctx = ph.getContext('2d');
+                pctx.fillStyle = '#111'; pctx.fillRect(0,0,256,256);
+                pctx.fillStyle = '#0f0'; pctx.font = '18px monospace';
+                pctx.textAlign = 'center'; pctx.fillText('Waiting for', 128, 120);
+                pctx.fillText('imageDisplay2', 128, 145);
+                texture2 = new THREE.CanvasTexture(ph);
+                displacementMap2 = new THREE.CanvasTexture(ph);
+
+                const mat = new THREE.MeshStandardMaterial({
+                    map: texture2,
+                    displacementMap: displacementMap2,
+                    displacementScale: 0.6,
+                    metalness: 0.3,
+                    roughness: 0.7
+                });
+                mesh2 = new THREE.Mesh(new THREE.PlaneGeometry(10, 10, 128, 128), mat);
+                scene2.add(mesh2);
+            }
+
+            function onWindowResize() {
+                const w1 = document.getElementById('viewerContainer1').offsetWidth;
+                const h1 = document.getElementById('viewerContainer1').offsetHeight;
+                camera1.aspect = w1 / h1;
+                camera1.updateProjectionMatrix();
+                renderer1.setSize(w1, h1);
+
+                const w2 = document.getElementById('viewerContainer2').offsetWidth;
+                const h2 = document.getElementById('viewerContainer2').offsetHeight;
+                camera2.aspect = w2 / h2;
+                camera2.updateProjectionMatrix();
+                renderer2.setSize(w2, h2);
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                renderer1.render(scene1, camera1);
+                renderer2.render(scene2, camera2);
+            }
+
+            function generateDisplacementMap(imageData) {
+                const canvas = document.createElement('canvas');
+                canvas.width = imageData.width;
+                canvas.height = imageData.height;
+                const ctx = canvas.getContext('2d');
+                ctx.putImageData(imageData, 0, 0);
+
+                const dispCanvas = document.createElement('canvas');
+                dispCanvas.width = imageData.width;
+                dispCanvas.height = imageData.height;
+                const dispCtx = dispCanvas.getContext('2d');
+                dispCtx.drawImage(canvas, 0, 0);
+                const imgData = dispCtx.getImageData(0, 0, dispCanvas.width, dispCanvas.height);
+                const data = imgData.data;
+                for (let i = 0; i < data.length; i += 4) {
+                    const brightness = (data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114);
+                    data[i] = data[i+1] = data[i+2] = brightness;
+                }
+                dispCtx.putImageData(imgData, 0, 0);
+                return dispCanvas;
+            }
+
+            function update3DFromImageDisplay2() {
+                if (!imageDisplay2 || !imageDisplay2.complete || imageDisplay2.naturalWidth === 0) {
+                    return;
+                }
+
+                // Read the current imageDisplay2
+                tempCanvas.width = imageDisplay2.naturalWidth;
+                tempCanvas.height = imageDisplay2.naturalHeight;
+                tempCtx.drawImage(imageDisplay2, 0, 0);
+                const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+
+                currentAspectRatio = tempCanvas.width / tempCanvas.height;
+                const baseWidth = 10 * currentAspectRatio;
+                const baseHeight = 10;
+
+                // Update geometry
+                mesh1.geometry.dispose();
+                mesh1.geometry = new THREE.PlaneGeometry(baseWidth, baseHeight, 128, 128);
+                mesh2.geometry.dispose();
+                mesh2.geometry = new THREE.PlaneGeometry(baseWidth, baseHeight, 128, 128);
+
+                // Update textures
+                if (texture1) texture1.dispose();
+                texture1 = new THREE.CanvasTexture(tempCanvas);
+                texture1.needsUpdate = true;
+
+                if (texture2) texture2.dispose();
+                texture2 = new THREE.CanvasTexture(tempCanvas);
+                texture2.needsUpdate = true;
+
+                // Displacement
+                const dispCanvas = generateDisplacementMap(imageData);
+                if (displacementMap1) displacementMap1.dispose();
+                displacementMap1 = new THREE.CanvasTexture(dispCanvas);
+                if (displacementMap2) displacementMap2.dispose();
+                displacementMap2 = new THREE.CanvasTexture(dispCanvas);
+
+                mesh1.material.map = texture1;
+                mesh1.material.displacementMap = displacementMap1;
+                mesh1.material.displacementScale = 0.8;
+                mesh1.material.needsUpdate = true;
+
+                mesh2.material.map = texture2;
+                mesh2.material.displacementMap = displacementMap2;
+                mesh2.material.displacementScale = 0.8;
+                mesh2.material.needsUpdate = true;
+
+                // Adjust camera
+                const maxDim = Math.max(baseWidth, baseHeight);
+                camera1.position.set(0.15, 0, maxDim * 0.7);
+                camera1.lookAt(0, 0, 0);
+                camera2.position.set(-0.15, 0, maxDim * 0.7);
+                camera2.lookAt(0, 0, 0);
+            }
+
+            function start3D() {
+                if (is3DRunning) return;
+                is3DRunning = true;
+                start3DBtn.disabled = true;
+                stop3DBtn.disabled = false;
+                statusText.textContent = '3D running – reading imageDisplay2 live';
+
+                // Update as fast as possible from the live imageDisplay2
+                interval3D = setInterval(update3DFromImageDisplay2, 30); // ~33fps is stable
+            }
+
+            function stop3D() {
+                if (!is3DRunning) return;
+                is3DRunning = false;
+                clearInterval(interval3D);
+                interval3D = null;
+                start3DBtn.disabled = false;
+                stop3DBtn.disabled = true;
+                statusText.textContent = '3D stopped';
+            }
+
+            start3DBtn.addEventListener('click', start3D);
+            stop3DBtn.addEventListener('click', stop3D);
+            captureNowBtn.addEventListener('click', update3DFromImageDisplay2);
+
+            resetViewBtn1.addEventListener('click', function() {
+                const maxDim = Math.max(10, 10 / currentAspectRatio);
+                camera1.position.set(0, 0, maxDim * 0.8);
+                camera1.lookAt(0, 0, 0);
+            });
+            resetViewBtn2.addEventListener('click', function() {
+                const maxDim = Math.max(10, 10 / currentAspectRatio);
+                camera2.position.set(0, 0, maxDim * 0.8);
+                camera2.lookAt(0, 0, 0);
+            });
+
+            window.addEventListener('resize', onWindowResize);
+            initThreeJS1();
+            initThreeJS2();
+            animate();
+        });
+    </script>
+
+    <!-- Simple recording (optional) -->
+    <script>
+        // Minimal recording support (can be removed if not needed)
+        let recorder = null;
+        document.getElementById('btn-start-recording').onclick = async function() {
+            this.disabled = true;
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                const video = document.getElementById('video-preview');
+                video.srcObject = stream;
+                // You can add RecordRTC here if you still need it
+                document.getElementById('btn-stop-recording').disabled = false;
+            } catch(e) {
+                this.disabled = false;
+                console.error(e);
+            }
+        };
+        document.getElementById('btn-stop-recording').onclick = function() {
+            this.disabled = true;
+            document.getElementById('btn-start-recording').disabled = false;
+        };
+    </script>
+</body>
+</html>
